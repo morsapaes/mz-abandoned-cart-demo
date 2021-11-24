@@ -11,7 +11,7 @@ services:
     image: materialize/cli
     container_name: mzcli
   redpanda:
-    image: docker.vectorized.io/vectorized/redpanda:v21.9.5
+    image: docker.vectorized.io/vectorized/redpanda:v21.10.1
     container_name: redpanda
     command:
      - redpanda start
@@ -43,7 +43,7 @@ services:
     volumes:
      - ${PWD}/postgres_image:/docker-entrypoint-initdb.d
   mysql:
-    image: debezium/example-mysql:1.4
+    image: debezium/example-mysql:1.7
     ports:
      - 3306:3306
     environment:
@@ -54,7 +54,8 @@ services:
     volumes:
      - ${PWD}/mysql_image:/docker-entrypoint-initdb.d
   debezium:
-    image: debezium/connect:1.4
+    image: debezium/connect:1.7
+    container_name: debezium
     environment:
       BOOTSTRAP_SERVERS: redpanda:9092
       GROUP_ID: 1
@@ -64,17 +65,9 @@ services:
       VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
-    depends_on: [redpanda]
+    depends_on: [redpanda,mysql,metabase]
     ports:
       - 8083:8083
-  ordersgen:
-    build: orders_generation_mock
-    container_name: ordersgen
-    environment:
-     - MYSQL_USER=mysqluser
-     - MYSQL_PASSWORD=mysqlpw
-     - MYSQL_DATABASE=shop
-    depends_on: [mysql]
   metabase:
     image: materialize/metabase:v0.0.5
     container_name: metabase
@@ -82,3 +75,11 @@ services:
        - materialized
     ports:
       - 3030:3000
+  ordersgen:
+    build: orders_generation_mock
+    container_name: ordersgen
+    environment:
+     - MYSQL_USER=mysqluser
+     - MYSQL_PASSWORD=mysqlpw
+     - MYSQL_DATABASE=shop
+    depends_on: [mysql,redpanda,debezium,metabase]
