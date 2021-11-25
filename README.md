@@ -247,8 +247,6 @@ Make sure to select Materialize as the source of the data.
 
 Once ready you will be able to visualize your data just as you would with a standard PostgreSQL database.
 
-![Metabase](https://user-images.githubusercontent.com/21223421/142780602-043f36c7-f279-4dc7-8853-99ddb31b452f.png)
-
 ## Stopping the demo
 
 To stop all of the services run:
