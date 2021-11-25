@@ -4,6 +4,7 @@
 
 while true; do
     echo "Waiting for Debezium to be ready"
+    sleep 0.1
     curl -s -o /dev/null -w "%{http_code}" http://debezium:8083/connectors/ | grep 200
     if [ $? -eq 0 ]; then
         echo "Debezium is ready"

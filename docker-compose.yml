@@ -1,4 +1,4 @@
-version: '3.7'
+version: '3.9'
 services:
   materialized:
     image: materialize/materialized:v0.9.13
@@ -7,6 +7,8 @@ services:
     command: -w1 --disable-telemetry --experimental
     ports:
       - 6875:6875
+    depends_on:
+      - redpanda
   mzcli:
     image: materialize/cli
     container_name: mzcli
@@ -42,6 +44,8 @@ services:
      - POSTGRES_DB=postgres
     volumes:
      - ${PWD}/postgres_image:/docker-entrypoint-initdb.d
+    depends_on:
+      - redpanda
   mysql:
     image: debezium/example-mysql:1.7
     ports:
@@ -53,6 +57,8 @@ services:
      - MYSQL_DATABASE=shop
     volumes:
      - ${PWD}/mysql_image:/docker-entrypoint-initdb.d
+    depends_on:
+      - redpanda
   debezium:
     image: debezium/connect:1.7
     container_name: debezium
@@ -65,7 +71,10 @@ services:
       VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
-    depends_on: [redpanda,mysql,metabase]
+    depends_on:
+      - redpanda
+      - mysql
+      - metabase
     ports:
       - 8083:8083
   metabase:
@@ -82,4 +91,8 @@ services:
      - MYSQL_USER=mysqluser
      - MYSQL_PASSWORD=mysqlpw
      - MYSQL_DATABASE=shop
-    depends_on: [mysql,redpanda,debezium,metabase]
+    depends_on:
+      - mysql
+      - redpanda
+      - debezium
+      - metabase
