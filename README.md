@@ -2,7 +2,7 @@
 
 This is a self-contained demo using [Materialize](https://materialize.com/).
 
-This demo would show you how to use Materialize to keep an eye on your website orders and send you or your customers a notification when they have abanonned their cart for a long time without proceeding with their payment.
+This demo would show you how to use Materialize to keep an eye on your website orders and send you or your customers a notification when they have abandoned their cart for a long time without proceeding with their payment.
 
 ![mz-abandoned-cart-demo](https://user-images.githubusercontent.com/21223421/143267063-2dbb1ec2-d48d-4ba5-8da8-f0d9ac1404e4.png)
 
@@ -20,18 +20,18 @@ As shown in the diagram above we will have the following components:
 
 - A mock service to continually generate orders.
 - The orders would be stored in a MySQL database.
-- As the database writes occur, Debezium stream the changes out of MySQL to a Redpanda topic.
+- As the database writes occur, Debezium streams the changes out of MySQL to a Redpanda topic.
 - We also would have a Postgres database where we would get our users from.
 - We would then ingest this Redpanda topic into Materialize directly along with the users from the Postgres database.
 - In Materialize we will join our orders and users together, do some filtering and create a materialized view that shows the abandoned cart information.
 - We will then create a sink to send the abandoned cart data out to a new Redpanda topic. 
-- You could later on use the informaiton form that new topic to send out notifications to your users and remind them that they have an abandoned cart.
+- You could, later on, use the information from that new topic to send out notifications to your users and remind them that they have an abandoned cart.
 
 > As a side note here, you would be perfectly fine using Kafka instead of Redpanda. I just like the simplicity that Redpanda brings to the table, as you can run a single Redpanda instance instead of all of the Kafka components.
 
 ## Running the demo
 
-First start by cloing the repository:
+First, start by cloning the repository:
 
 ```
 git clone https://github.com/bobbyiliev/mz-abandoned-cart-demo.git
@@ -55,7 +55,7 @@ Build the images:
 docker-compose build
 ```
 
-Finally start all of the services:
+Finally, start all of the services:
 
 ```
 docker-compose up -d
@@ -67,7 +67,7 @@ In order to Launch the Materialize CLI, you can run the following command:
 docker-compose run mzcli
 ```
 
-> This is just a shortcut to a docker container with postgres-client pre-installed, if you already have psql you could run `psql -U materialize -h localhost -p 6875 materialize` instead.
+> This is just a shortcut to a docker container with postgres-client pre-installed, if you already have `psql` you could run `psql -U materialize -h localhost -p 6875 materialize` instead.
 
 ### Create a Materialize Kafka Source
 
@@ -80,7 +80,7 @@ FORMAT AVRO USING CONFLUENT SCHEMA REGISTRY 'http://redpanda:8081'
 ENVELOPE DEBEZIUM;
 ```
 
-If you were to check the avaolable columns from the `orders` source by running the following statement:
+If you were to check the available columns from the `orders` source by running the following statement:
 
 ```sql
 SHOW COLUMNS FROM orders;
@@ -121,7 +121,7 @@ CREATE MATERIALIZED VIEW abandoned_orders AS
     GROUP BY 1,2;
 ```
 
-You can now use `SELECT * FROM abandoned_orders;` to see the resultsL
+You can now use `SELECT * FROM abandoned_orders;` to see the results:
 
 ```sql
 SELECT * FROM abandoned_orders;
@@ -170,13 +170,13 @@ Next, let's go ahead and create a few more views.
 
 [Sinks](https://materialize.com/docs/sql/create-sink/) let you send data from Materialize to an external source.
 
-For this Demo we will be using [Redpanda](https://materialize.com/docs/third-party/redpanda/).
+For this Demo, we will be using [Redpanda](https://materialize.com/docs/third-party/redpanda/).
 
-Redpanda is a Kafka API-compatible and Materialize can process data from it just as it would processes data from a Kafka sources.
+Redpanda is a Kafka API-compatible and Materialize can process data from it just as it would process data from a Kafka source.
 
 Let's create a materialized view, that will hold all of the high volume unpaid orders:
 
-```
+```sql
  CREATE MATERIALIZED VIEW high_value_orders AS
       SELECT
         users.id,
@@ -189,7 +189,7 @@ Let's create a materialized view, that will hold all of the high volume unpaid o
       HAVING revenue > 2000;
 ```
 
-As you can see, here we are actually joining the `users` view which is ingesting the data directly from our Postgres source and the `abandond_orders` views which is ingesting the data from the Redpanda topic, together.
+As you can see, here we are actually joining the `users` view which is ingesting the data directly from our Postgres source, and the `abandond_orders` views which is ingesting the data from the Redpanda topic, together.
 
 Let's create a Sink where we will send the data of the above materialized view:
 
@@ -247,9 +247,9 @@ Make sure to select Materialize as the source of the data.
 
 Once ready you will be able to visualize your data just as you would with a standard PostgreSQL database.
 
-## Stopping the demo
+## Stopping the Demo
 
-To stop all of the services run:
+To stop all of the services run the following command:
 
 ```
 docker-compose down
